@@ -26,6 +26,8 @@ public class Main {
 	static final String[] flags = { "--input", "--inputtype", "--operations", "--threads", "--output" };
 
 	/**
+	 * Takes data from file, transforms it with a series of operations and writes
+	 * the data out to some specified location
 	 * 
 	 * @param args The arguments as per the exercise PDF
 	 * @throws IOException
@@ -50,7 +52,6 @@ public class Main {
 		OutputStream target = System.out;
 		try {
 			if (arguments.contains("--output")) {
-				System.out.println(argPairs.get("--output"));
 				target = new FileOutputStream(argPairs.get("--output"));
 			}
 		} catch (IOException e) {
