@@ -2,6 +2,9 @@ package com.jonassigel.Transformers;
 
 import java.util.Objects;
 
+/**
+ * Validator: Stops any nulls by way of exception
+ */
 public class NonNull extends Transformer {
 
     private static final NonNull instance = new NonNull();

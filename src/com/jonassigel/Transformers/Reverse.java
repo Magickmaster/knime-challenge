@@ -2,11 +2,17 @@ package com.jonassigel.Transformers;
 
 import java.util.Objects;
 
-public class Reverser extends Transformer {
+/**
+ * Reverses a compatible input
+ */
+public class Reverse extends Transformer {
 
     // Lightweight object, small project.
-    private static final Reverser instance = new Reverser();
+    private static final Reverse instance = new Reverse();
 
+    /**
+     * Reverses the string so the chars are arranged backwards
+     */
     @Override
     public String applyOnString(String t) {
         Objects.requireNonNull(t);
@@ -17,6 +23,10 @@ public class Reverser extends Transformer {
         return String.valueOf(result);
     }
 
+    /**
+     * Reverses the integer so its decimals are arranged backwards, with negative
+     * numbers retaining the '-' prefix
+     */
     @Override
     public Integer applyOnInteger(Integer t) {
         Objects.requireNonNull(t);
@@ -31,7 +41,7 @@ public class Reverser extends Transformer {
         return Integer.parseInt(this.applyOnString(Integer.toString(t)));
     }
 
-    public static Reverser getInstance() {
+    public static Reverse getInstance() {
         return instance;
     }
 

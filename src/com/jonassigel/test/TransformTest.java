@@ -10,7 +10,7 @@ import com.jonassigel.Transform;
 import com.jonassigel.Transformers.Capitalize;
 import com.jonassigel.Transformers.Negate;
 import com.jonassigel.Transformers.NonNull;
-import com.jonassigel.Transformers.Reverser;
+import com.jonassigel.Transformers.Reverse;
 import com.jonassigel.Transformers.Transformer;
 
 import org.junit.Test;
@@ -23,7 +23,7 @@ public class TransformTest {
         actuals.add(Capitalize.getInstance());
         actuals.add(Negate.getInstance());
         actuals.add(NonNull.getInstance());
-        actuals.add(Reverser.getInstance());
+        actuals.add(Reverse.getInstance());
         List<Transformer> transformers = Transform.generateTransformersFrom(valids);
         assertArrayEquals(actuals.toArray(), transformers.toArray());
         try {

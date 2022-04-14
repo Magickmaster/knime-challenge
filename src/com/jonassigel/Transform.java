@@ -13,12 +13,26 @@ import com.jonassigel.Transformers.Transformer;
 
 public class Transform {
 
+    /**
+     * Fetches the respective transformers for each entry token
+     * 
+     * @param tokens The tokens of the operations
+     * @return The transformers in order
+     */
     public static List<Transformer> generateTransformersFrom(String... tokens) {
         return Arrays.stream(tokens)
                 .filter(s -> Objects.nonNull(s) && !s.isBlank()).map(String::trim).map(Transformer::toTransformer)
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Transforms a given input depending on its type through the list of
+     * transformers. Each type needs to have its own instance sendoff
+     * 
+     * @param input        The target
+     * @param transformers The list of operations to perform in order
+     * @return The result of all applications
+     */
     public static Object transform(Object input, List<Transformer> transformers) {
         if (input instanceof String s) {
             for (Transformer t : transformers) {
@@ -41,30 +55,17 @@ public class Transform {
         throw new IllegalArgumentException("The supplied type doesn't have a pipeline yet");
     }
 
-    public static String transformString(String input, List<Transformer> transformers) {
-        for (Transformer t : transformers) {
-            input = t.applyOnString(input);
-        }
-        return input;
-    }
-
-    public static Object transformInteger(Integer input, List<Transformer> transformers) {
-        for (Transformer t : transformers) {
-            input = t.applyOnInteger(input);
-        }
-        return input;
-    }
-
-    public static Object transformDouble(Double input, List<Transformer> transformers) {
-        for (Transformer t : transformers) {
-            input = t.applyOnDouble(input);
-        }
-        return input;
-    }
-
+    /**
+     * Takes a stream of inputs, transforms it and streams it to the output
+     * 
+     * @param type         What type the incoming data has
+     * @param target       where the data should go to
+     * @param transformers the operations to perform
+     * @param elements     the incoming data
+     * @throws IOException if
+     */
     static void transformInput(String type, OutputStream target, List<Transformer> transformers,
-            Stream<String> elements)
-            throws IOException {
+            Stream<String> elements) {
         OutputStreamWriter consume = new OutputStreamWriter(target);
 
         elements = elements.peek(s -> Statistics.getInstance().updateStatisticsWithLine(s));
@@ -81,10 +82,22 @@ public class Transform {
                 elements.map(i -> Transform.transform(i, transformers))
                         .forEachOrdered(r -> tryConsume(r, consume));
         }
-        target.flush();
-        consume.close();
+        try {
+
+            target.flush();
+            consume.close();
+
+        } catch (IOException e) {
+            System.err.println("Could not cleanup outputs after all operations: " + e.getMessage());
+        }
     }
 
+    /**
+     * Attempts to append the transformed data into the output.
+     * 
+     * @param toConsume the generated element
+     * @param output    the upstream
+     */
     public static void tryConsume(Object toConsume, OutputStreamWriter output) {
         Objects.requireNonNull(toConsume);
         Objects.requireNonNull(output);

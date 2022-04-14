@@ -3,8 +3,6 @@ package com.jonassigel;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
@@ -29,10 +27,10 @@ public class Main {
 
 	/**
 	 * 
-	 * @param args
+	 * @param args The arguments as per the exercise PDF
 	 * @throws IOException
 	 */
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) {
 		// add your code here
 
 		// I do not like to assume that the arguments are correct but i'd implement a
@@ -50,10 +48,15 @@ public class Main {
 
 		// Prepare output methodology
 		OutputStream target = System.out;
-		if (arguments.contains("--output")) {
-			System.out.println(argPairs.get("--output"));
-			Files.createFile(Path.of(argPairs.get("--output")));
-			target = new FileOutputStream(argPairs.get("--output"));
+		try {
+			if (arguments.contains("--output")) {
+				System.out.println(argPairs.get("--output"));
+				target = new FileOutputStream(argPairs.get("--output"));
+			}
+		} catch (IOException e) {
+			System.err.println("Output not possible: " + e);
+			System.err.println("Fallback to sysout! ");
+			target = System.out;
 		}
 
 		// Open file and allow asynchronous operation on data
@@ -64,12 +67,16 @@ public class Main {
 			// (networked streaming microservices anyone?)
 			// Putting this in an asynchronous worker with the indefinite lazy input stream
 			// could be powerful. If the parallelization requires the data to be
-			// well-defined
-			// and complete beforehand, this is impossible.
-			// Proof of thesis: Extremely long input
+			// well-defined and complete beforehand, this is impossible.
+			// Proof of thesis: Extremely long input is processed mostly out of memory and
+			// very fast.
+			// Test file: 35GB text, memory usage never over 8gb, completed successfully
+			// with parallel usage. Other method would have required loading all to memory,
+			// which is infeasible with just 16gb +8 swap ram
 			Stream<String> elements = sc.tokens().parallel();
 			Transform.transformInput(type, target, transformers, elements);
 		} catch (IOException e) {
+			// Wish: Logging library
 			System.err.println("There was an IO exception: " + e.getMessage());
 		}
 
