@@ -20,6 +20,14 @@ public class Reverser extends Transformer {
     @Override
     public Integer applyOnInteger(Integer t) {
         Objects.requireNonNull(t);
+
+        // Can't reverse negatives because you can't parse "1-"
+        if (t < 0) {
+            t = Negate.getInstance().applyOnInteger(t);
+            t = Integer.parseInt(this.applyOnString(Integer.toString(t)));
+            return Negate.getInstance().applyOnInteger(t);
+        }
+
         return Integer.parseInt(this.applyOnString(Integer.toString(t)));
     }
 

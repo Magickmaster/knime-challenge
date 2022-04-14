@@ -12,7 +12,7 @@ public abstract class Arguments {
         Arrays.stream(identifiers).forEach(i -> resultingArgs.putIfAbsent(i, ""));
 
         for (int i = 0; i < args.length - 1; i++) {
-            if (resultingArgs.values().contains(args[i])) {
+            if (resultingArgs.keySet().contains(args[i])) {
                 resultingArgs.put(args[i], args[i + 1]);
                 i++;
             }

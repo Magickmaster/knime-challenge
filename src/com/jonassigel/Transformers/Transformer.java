@@ -24,12 +24,13 @@ public abstract class Transformer {
                 return Capitalize.getInstance();
             case "reverse":
                 return Reverser.getInstance();
-            case "nonNull":
+            case "nonnull":
                 return NonNull.getInstance();
             case "negate":
                 return Negate.getInstance();
             default:
-                throw new IllegalArgumentException("The supplied string is not a valid transformer!");
+                throw new IllegalArgumentException(
+                        "The supplied string is not a valid transformer! Offender: {" + identifier + "}");
         }
     }
 }

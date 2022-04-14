@@ -1,8 +1,13 @@
 package com.jonassigel;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.jonassigel.Transformers.Transformer;
 
@@ -10,7 +15,8 @@ public class Transform {
 
     public static List<Transformer> generateTransformersFrom(String... tokens) {
         return Arrays.stream(tokens)
-                .map(String::trim).map(Transformer::toTransformer).collect(Collectors.toList());
+                .filter(s -> Objects.nonNull(s) && !s.isBlank()).map(String::trim).map(Transformer::toTransformer)
+                .collect(Collectors.toList());
     }
 
     public static Object transform(Object input, List<Transformer> transformers) {
@@ -54,5 +60,40 @@ public class Transform {
             input = t.applyOnDouble(input);
         }
         return input;
+    }
+
+    static void transformInput(String type, OutputStream target, List<Transformer> transformers,
+            Stream<String> elements)
+            throws IOException {
+        OutputStreamWriter consume = new OutputStreamWriter(target);
+
+        elements = elements.peek(s -> Statistics.getInstance().updateStatisticsWithLine(s));
+        switch (type) {
+            case "int":
+                elements.map(Integer::valueOf).map(i -> Transform.transform(i, transformers))
+                        .forEachOrdered(r -> tryConsume(r, consume));
+                break;
+            case "double":
+                elements.map(Double::valueOf).map(i -> Transform.transform(i, transformers))
+                        .forEachOrdered(r -> tryConsume(r, consume));
+                break;
+            default:
+                elements.map(i -> Transform.transform(i, transformers))
+                        .forEachOrdered(r -> tryConsume(r, consume));
+        }
+        target.flush();
+        consume.close();
+    }
+
+    public static void tryConsume(Object toConsume, OutputStreamWriter output) {
+        Objects.requireNonNull(toConsume);
+        Objects.requireNonNull(output);
+
+        try {
+            output.append(toConsume.toString() + "\n");
+
+        } catch (IOException e) {
+            System.err.println("A value could not be written to the desired output");
+        }
     }
 }

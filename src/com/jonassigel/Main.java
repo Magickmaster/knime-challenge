@@ -2,11 +2,12 @@ package com.jonassigel;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -20,50 +21,56 @@ import com.jonassigel.arguments.Arguments;
  * @author Jonas Sigel for KNIME GmbH
  */
 public class Main {
-	static Writer output;
-	static String[] flags = { "--input", "--inputtype", "--operations", "--threads", "--output" };
 
+	/**
+	 * A set of supported flags
+	 */
+	static final String[] flags = { "--input", "--inputtype", "--operations", "--threads", "--output" };
+
+	/**
+	 * 
+	 * @param args
+	 * @throws IOException
+	 */
 	public static void main(String[] args) throws IOException {
-
 		// add your code here
 
 		// I do not like to assume that the arguments are correct but i'd implement a
 		// large framework just for that. Which I won't.
 		// EDIT: I did. (Leaving these comments for comedic effect)
+
+		// Unwrap the supplied arguments
 		Set<String> arguments = Arguments.getPresentArguments(args, flags);
 		Map<String, String> argPairs = Arguments.getPariedArguments(args, flags);
 
-		argPairs.put("--operations", "capitalize,reverse");
+		// Extract and map necessary information
+		String type = argPairs.get("--inputtype").toLowerCase();
+		String[] ops = argPairs.get("--operations").split(",");
+		List<Transformer> transformers = Transform.generateTransformersFrom(ops);
 
-		List<Transformer> transformers = Transform.generateTransformersFrom(argPairs.get("--operations").split(","));
-		try (Scanner sc = new Scanner("Hello World!")) {
+		// Prepare output methodology
+		OutputStream target = System.out;
+		if (arguments.contains("--output")) {
+			System.out.println(argPairs.get("--output"));
+			Files.createFile(Path.of(argPairs.get("--output")));
+			target = new FileOutputStream(argPairs.get("--output"));
+		}
 
+		// Open file and allow asynchronous operation on data
+		try (Scanner sc = new Scanner(Paths.get(argPairs.get("--input")))) {
 			sc.useDelimiter("\n");
+			// Custom stream.parallel could be implemented as per part #3
+			// Arguments why it is bad here: Input can be very very long, or even infinite
+			// (networked streaming microservices anyone?)
+			// Putting this in an asynchronous worker with the indefinite lazy input stream
+			// could be powerful. If the parallelization requires the data to be
+			// well-defined
+			// and complete beforehand, this is impossible.
+			// Proof of thesis: Extremely long input
 			Stream<String> elements = sc.tokens().parallel();
-			OutputStreamWriter consume;
-			if (arguments.contains("--output")) {
-				consume = new OutputStreamWriter(new FileOutputStream(argPairs.get("--output")));
-
-			} else {
-				consume = new OutputStreamWriter(System.out);
-			}
-			elements = elements.peek(s -> Statistics.getInstance().updateStatisticsWithLine(s));
-			switch (argPairs.get("--inputtype").toLowerCase()) {
-				case "integer":
-					elements.map(Integer::valueOf).map(i -> Transform.transform(i, transformers))
-							.forEachOrdered(r -> tryConsume(r, consume));
-					break;
-				case "double":
-					elements.map(Double::valueOf).map(i -> Transform.transform(i, transformers))
-							.forEachOrdered(r -> tryConsume(r, consume));
-					break;
-				default:
-					elements.map(i -> Transform.transform(i, transformers))
-							.forEachOrdered(r -> tryConsume(r, consume));
-			}
-
-			System.out.println();
-			System.out.println("Transformers:");
+			Transform.transformInput(type, target, transformers, elements);
+		} catch (IOException e) {
+			System.err.println("There was an IO exception: " + e.getMessage());
 		}
 
 		// DO NOT CHANGE THE FOLLOWING LINES OF CODE
@@ -72,14 +79,4 @@ public class Main {
 				Statistics.getInstance().getNoOfUniqueLines()));
 	}
 
-	public static void tryConsume(Object toConsume, OutputStreamWriter output) {
-		Objects.requireNonNull(toConsume);
-		Objects.requireNonNull(output);
-
-		try {
-			output.append(toConsume.toString() + "\n");
-		} catch (IOException e) {
-			System.err.println("A value could not be written to the desired output");
-		}
-	}
 }
