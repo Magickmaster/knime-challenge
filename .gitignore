@@ -1,3 +1,4 @@
 /data/large/*
 /data/output.txt
 /.vscode
+/data/knime_*
