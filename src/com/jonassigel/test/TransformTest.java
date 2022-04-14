@@ -28,7 +28,7 @@ public class TransformTest {
 
         List<Transformer> transformers = Transform.generateTransformersFrom(valids);
         assertArrayEquals(actuals.toArray(), transformers.toArray());
-        
+
         try {
             Transform.generateTransformersFrom("capitalize", "wrong", "", "nuh");
         } catch (Exception e) {
@@ -39,10 +39,10 @@ public class TransformTest {
     @Test
     public void testValidTransform() {
         List<Transformer> transformers = Transform.generateTransformersFrom("reverse", "negate");
-        assertEquals(1, Transform.transform(Integer.valueOf(-1), transformers));
+        assertEquals((Integer) 1, Transform.transform(Integer.valueOf(-1), transformers));
 
         transformers = Transform.generateTransformersFrom("negate");
-        assertEquals(1.0, Transform.transform(Double.valueOf(-1.0), transformers));
+        assertEquals((Double) 1.0, Transform.transform(Double.valueOf(-1.0), transformers));
 
         transformers = Transform.generateTransformersFrom("reverse", "capitalize");
         assertEquals("TSET", Transform.transform("test", transformers));

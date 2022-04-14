@@ -34,25 +34,52 @@ public class Transform {
      * @return The result of all applications
      */
     public static Object transform(Object input, List<Transformer> transformers) {
-        if (input instanceof String s) {
-            for (Transformer t : transformers) {
-                s = t.applyOnString(s);
-            }
-            return s;
-        }
-        if (input instanceof Integer i) {
-            for (Transformer t : transformers) {
-                i = t.applyOnInteger(i);
-            }
-            return i;
-        }
-        if (input instanceof Double d) {
-            for (Transformer t : transformers) {
-                d = t.applyOnDouble(d);
-            }
-            return d;
-        }
         throw new IllegalArgumentException("The supplied type doesn't have a pipeline yet");
+    }
+
+    /**
+     * Transforms a given input depending on its type through the list of
+     * transformers. Each type needs to have its own instance sendoff
+     * 
+     * @param input        The target
+     * @param transformers The list of operations to perform in order
+     * @return The result of all applications
+     */
+    public static Double transform(Double d, List<Transformer> transformers) {
+        for (Transformer t : transformers) {
+            d = t.applyOnDouble(d);
+        }
+        return d;
+    }
+
+    /**
+     * Transforms a given input depending on its type through the list of
+     * transformers. Each type needs to have its own instance sendoff
+     * 
+     * @param input        The target
+     * @param transformers The list of operations to perform in order
+     * @return The result of all applications
+     */
+    public static String transform(String s, List<Transformer> transformers) {
+        for (Transformer t : transformers) {
+            s = t.applyOnString(s);
+        }
+        return s;
+    }
+
+    /**
+     * Transforms a given input depending on its type through the list of
+     * transformers. Each type needs to have its own instance sendoff
+     * 
+     * @param input        The target
+     * @param transformers The list of operations to perform in order
+     * @return The result of all applications
+     */
+    public static Integer transform(Integer i, List<Transformer> transformers) {
+        for (Transformer t : transformers) {
+            i = t.applyOnInteger(i);
+        }
+        return i;
     }
 
     /**
@@ -78,7 +105,7 @@ public class Transform {
                 elements.map(Double::valueOf).map(i -> Transform.transform(i, transformers))
                         .forEachOrdered(r -> tryConsume(r, consume));
                 break;
-            default:
+            default: // Remain String
                 elements.map(i -> Transform.transform(i, transformers))
                         .forEachOrdered(r -> tryConsume(r, consume));
         }
