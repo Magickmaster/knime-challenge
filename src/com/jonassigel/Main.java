@@ -29,8 +29,9 @@ public class Main {
 	 * Takes data from file, transforms it with a series of operations and writes
 	 * the data out to some specified location
 	 * 
-	 * @param args The arguments as per the exercise PDF
-	 * @throws IOException 
+	 * @param args
+	 *            The arguments as per the exercise PDF
+	 * @throws IOException
 	 */
 	public static void main(String[] args) {
 		// add your code here
@@ -43,8 +44,20 @@ public class Main {
 		Set<String> arguments = Arguments.getPresentArguments(args, flags);
 		Map<String, String> argPairs = Arguments.getPariedArguments(args, flags);
 
+		if (arguments.isEmpty()) {
+			System.err.println("No arguments have been supplied! Exiting!");
+			System.exit(1);
+		}
 		// Extract and map necessary information
-		String type = argPairs.get("--inputtype").toLowerCase();
+		String typeString = argPairs.get("--inputtype").toUpperCase();
+
+		AllowedTypes type;
+		try {
+			type = Enum.valueOf(AllowedTypes.class, typeString);
+		} catch (IllegalArgumentException e) {
+			System.err.println("The supplied type " + typeString + " is not supported. Fallback is String.");
+			type = AllowedTypes.STRING;
+		}
 		String[] ops = argPairs.get("--operations").split(",");
 		List<Transformer> transformers = Transform.generateTransformersFrom(ops);
 

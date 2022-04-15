@@ -2,3 +2,4 @@
 /data/output.txt
 /.vscode
 /data/knime_*
+eclipse-formatter.xml

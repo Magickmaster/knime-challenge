@@ -1,5 +1,9 @@
 package com.jonassigel.Transformers;
 
+import java.util.function.Function;
+
+import com.jonassigel.AllowedTypes;
+
 /**
  * Declares data types that can be transformed.
  * Operations that do not have a compatible implementation automatically throw
@@ -9,6 +13,10 @@ package com.jonassigel.Transformers;
  * method. (Sadly type erasure destroyed another concept)
  */
 public abstract class Transformer {
+
+    public Object apply(Object t) {
+        throw new IllegalArgumentException("Type not applicable for " + this.getClass().getSimpleName());
+    }
 
     public String applyOnString(String t) {
         throw new IllegalArgumentException("Type not applicable for " + this.getClass().getSimpleName());
@@ -34,22 +42,27 @@ public abstract class Transformer {
     /**
      * Retrieves a transformer instance by its name.
      * Transformers can be acquired by their instance as well.
-     * @param identifier The string identifier of a transformer
+     * 
+     * @param identifier
+     *            The string identifier of a transformer
      * @return
      */
     public static Transformer toTransformer(String identifier) {
-        switch (identifier.toLowerCase()) {
-            case "capitalize":
-                return Capitalize.getInstance();
-            case "reverse":
-                return Reverse.getInstance();
-            case "nonnull":
-                return NonNull.getInstance();
-            case "negate":
-                return Negate.getInstance();
-            default:
-                throw new IllegalArgumentException(
-                        "The supplied string is not a valid transformer! Offender: {" + identifier + "}");
-        }
+        return switch (identifier.toLowerCase()) {
+            case "capitalize" -> Capitalize.getInstance();
+            case "reverse" -> Reverse.getInstance();
+            case "nonnull" -> NonNull.getInstance();
+            case "negate" -> Negate.getInstance();
+            default -> throw new IllegalArgumentException(
+                    "The supplied string is not a valid transformer! Offender: {" + identifier + "}");
+        };
+    }
+
+    public Function<Object, Object> toTypedFunction(AllowedTypes type) {
+        return switch (type) {
+            case INT -> (x) -> applyOnInteger((Integer) x);
+            case DOUBLE -> (x) -> applyOnDouble((Double) x);
+            default -> (x) -> applyOnString((String) x);
+        };
     }
 }
