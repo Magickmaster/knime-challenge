@@ -30,7 +30,7 @@ public class Main {
 	 * the data out to some specified location
 	 * 
 	 * @param args The arguments as per the exercise PDF
-	 * @throws IOException
+	 * @throws IOException 
 	 */
 	public static void main(String[] args) {
 		// add your code here
@@ -79,6 +79,7 @@ public class Main {
 		} catch (IOException e) {
 			// Wish: Logging library
 			System.err.println("There was an IO exception: " + e.getMessage());
+			System.exit(1);
 		}
 
 		// DO NOT CHANGE THE FOLLOWING LINES OF CODE
