@@ -2,7 +2,7 @@ package com.jonassigel.Transformers;
 
 import java.util.function.Function;
 
-import com.jonassigel.AllowedTypes;
+import com.jonassigel.AllowedType;
 
 /**
  * Declares data types that can be transformed.
@@ -11,6 +11,9 @@ import com.jonassigel.AllowedTypes;
  * 
  * If an operation wants to be capable for a type, it can override the specific
  * method. (Sadly type erasure destroyed another concept)
+ * 
+ * To add new types: Add an entry in AllowedType enum, add corresponding parent
+ * function and an entry for the typed function
  */
 public abstract class Transformer {
 
@@ -58,7 +61,7 @@ public abstract class Transformer {
         };
     }
 
-    public Function<Object, Object> toTypedFunction(AllowedTypes type) {
+    public Function<Object, Object> toTypedFunction(AllowedType type) {
         return switch (type) {
             case INT -> (x) -> applyOnInteger((Integer) x);
             case DOUBLE -> (x) -> applyOnDouble((Double) x);

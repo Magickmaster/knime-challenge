@@ -10,10 +10,12 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
-import com.jonassigel.AllowedTypes;
+import com.jonassigel.AllowedType;
 import com.jonassigel.Transform;
+import com.jonassigel.Util;
 import com.jonassigel.Transformers.Capitalize;
 import com.jonassigel.Transformers.Negate;
 import com.jonassigel.Transformers.NonNull;
@@ -44,28 +46,29 @@ public class TransformTest {
 
     @Test
     public void testValidTransform() {
-        List<Transformer> transformers = Transform.generateTransformersFrom("reverse", "negate");
-        assertEquals((Integer) 1, Transform.transform(Integer.valueOf(-1), transformers));
+        Function<Object, Object> transformers = Util
+                .compose(Transform.generateTransformersFrom("reverse", "negate").stream()
+                        .map(t -> t.toTypedFunction(AllowedType.INT)));
+        assertEquals((Integer) 1, transformers.apply(Integer.valueOf(-1)));
 
-        transformers = Transform.generateTransformersFrom("negate");
-        assertEquals((Double) 1.0, Transform.transform(Double.valueOf(-1.0), transformers));
+        transformers = Util
+                .compose(Transform.generateTransformersFrom("negate").stream()
+                        .map(t -> t.toTypedFunction(AllowedType.DOUBLE)));
+        assertEquals((Double) 1.0, transformers.apply(Double.valueOf(-1.0)));
 
-        transformers = Transform.generateTransformersFrom("reverse", "capitalize");
-        assertEquals("TSET", Transform.transform("test", transformers));
-    }
-
-    @Test
-    public void testMultitypeTransform() {
-        List<Transformer> transformers = Transform.generateTransformersFrom("reverse");
-        assertEquals("tset", Transform.transform("test", transformers));
-        assertEquals(Integer.valueOf(1), Transform.transform(Integer.valueOf(1), transformers));
+        transformers = Util
+                .compose(Transform.generateTransformersFrom("reverse", "capitalize").stream()
+                        .map(t -> t.toTypedFunction(AllowedType.STRING)));
+        assertEquals("TSET", transformers.apply("Test"));
     }
 
     @Test
     public void testIllegalTransform() {
         List<Transformer> transformers = Transform.generateTransformersFrom("reverse", "negate");
+        Function<Object, Object> func = Util
+                .compose(transformers.stream().map(t -> t.toTypedFunction(AllowedType.STRING)));
         try {
-            Transform.transform("Hello", transformers);
+            func.apply("Hello");
             assertTrue(false);
         } catch (Exception e) {
             assertTrue(e instanceof IllegalArgumentException);
@@ -86,7 +89,7 @@ public class TransformTest {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         List<Transformer> transformers = Transform.generateTransformersFrom("reverse");
         Stream<String> source = Arrays.asList("Hello", "World").stream();
-        Transform.transformInput(AllowedTypes.STRING, output, transformers, source);
+        Transform.transformInput(AllowedType.STRING, output, transformers, source);
         assertEquals("olleH\ndlroW\n", output.toString());
 
     }

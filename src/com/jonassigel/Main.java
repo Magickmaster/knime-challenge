@@ -51,13 +51,14 @@ public class Main {
 		// Extract and map necessary information
 		String typeString = argPairs.get("--inputtype").toUpperCase();
 
-		AllowedTypes type;
+		AllowedType type;
 		try {
-			type = Enum.valueOf(AllowedTypes.class, typeString);
+			type = Enum.valueOf(AllowedType.class, typeString);
 		} catch (IllegalArgumentException e) {
 			System.err.println("The supplied type " + typeString + " is not supported. Fallback is String.");
-			type = AllowedTypes.STRING;
+			type = AllowedType.STRING;
 		}
+
 		String[] ops = argPairs.get("--operations").split(",");
 		List<Transformer> transformers = Transform.generateTransformersFrom(ops);
 
@@ -86,7 +87,7 @@ public class Main {
 			// very fast.
 			// Test file: 35GB text, memory usage never over 8gb, completed successfully
 			// with parallel usage. Other method would have required loading all to memory,
-			// which is infeasible with just 16gb +8 swap ram
+			// which is not possible with just 16gb +8 swap ram
 			Stream<String> elements = sc.tokens().parallel();
 			Transform.transformInput(type, target, transformers, elements);
 		} catch (IOException e) {
