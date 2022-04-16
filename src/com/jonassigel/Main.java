@@ -29,8 +29,9 @@ public class Main {
 	 * Takes data from file, transforms it with a series of operations and writes
 	 * the data out to some specified location
 	 * 
-	 * @param args The arguments as per the exercise PDF
-	 * @throws IOException 
+	 * @param args
+	 *            The arguments as per the exercise PDF
+	 * @throws IOException
 	 */
 	public static void main(String[] args) {
 		// add your code here
@@ -43,8 +44,21 @@ public class Main {
 		Set<String> arguments = Arguments.getPresentArguments(args, flags);
 		Map<String, String> argPairs = Arguments.getPariedArguments(args, flags);
 
+		if (arguments.isEmpty()) {
+			System.err.println("No arguments have been supplied! Exiting!");
+			System.exit(1);
+		}
 		// Extract and map necessary information
-		String type = argPairs.get("--inputtype").toLowerCase();
+		String typeString = argPairs.get("--inputtype").toUpperCase();
+
+		AllowedType type;
+		try {
+			type = Enum.valueOf(AllowedType.class, typeString);
+		} catch (IllegalArgumentException e) {
+			System.err.println("The supplied type " + typeString + " is not supported. Fallback is String.");
+			type = AllowedType.STRING;
+		}
+
 		String[] ops = argPairs.get("--operations").split(",");
 		List<Transformer> transformers = Transform.generateTransformersFrom(ops);
 
@@ -73,7 +87,7 @@ public class Main {
 			// very fast.
 			// Test file: 35GB text, memory usage never over 8gb, completed successfully
 			// with parallel usage. Other method would have required loading all to memory,
-			// which is infeasible with just 16gb +8 swap ram
+			// which is not possible with just 16gb +8 swap ram
 			Stream<String> elements = sc.tokens().parallel();
 			Transform.transformInput(type, target, transformers, elements);
 		} catch (IOException e) {

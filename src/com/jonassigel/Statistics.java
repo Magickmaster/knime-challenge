@@ -8,13 +8,13 @@ import java.util.concurrent.atomic.LongAccumulator;
  * Captures statistics about the lines being read from the input file.
  * Thread-safe accumulation.
  * 
- * @author KNIME GmbH
+ * @author KNIME GmbH, enhanced by Jonas Sigel
  */
 public class Statistics {
 
 	private final Set<String> linesRead = ConcurrentHashMap.newKeySet();
 
-	private LongAccumulator lineCounter = new LongAccumulator((x, y) -> x + y, 0);
+	private final LongAccumulator lineCounter = new LongAccumulator((x, y) -> x + y, 0);
 
 	private static Statistics instance = null;
 
@@ -23,7 +23,7 @@ public class Statistics {
 	 * be called when a new line has been read from the input file.
 	 * 
 	 * @param line
-	 *             A new line that has been read from the input file.
+	 *            A new line that has been read from the input file.
 	 */
 	public void updateStatisticsWithLine(final String line) {
 		lineCounter.accumulate(1);
