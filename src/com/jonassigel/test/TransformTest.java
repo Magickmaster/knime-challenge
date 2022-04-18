@@ -87,9 +87,10 @@ public class TransformTest {
     @Test
     public void testStreamTransform() {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
+        OutputStreamWriter writer = new OutputStreamWriter(output);
         List<Transformer> transformers = Transform.generateTransformersFrom("reverse");
         Stream<String> source = Arrays.asList("Hello", "World").stream();
-        Transform.transformInput(AllowedType.STRING, output, transformers, source);
+        Transform.transformInput(AllowedType.STRING, writer, transformers, source);
         assertEquals("olleH\ndlroW\n", output.toString());
 
     }

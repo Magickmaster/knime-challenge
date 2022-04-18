@@ -1,7 +1,6 @@
 package com.jonassigel;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.Arrays;
 import java.util.List;
@@ -19,22 +18,21 @@ public class Transform {
      * 
      * @param type
      *            What type the incoming data has
-     * @param target
+     * @param output
      *            where the data should go to
      * @param transforms
      *            the operations to perform
      * @param elements
      *            the incoming data
      */
-    public static void transformInput(AllowedType type, OutputStream target, List<Transformer> transforms,
+    public static void transformInput(AllowedType type, OutputStreamWriter output, List<Transformer> transforms,
             Stream<String> elements) {
-        OutputStreamWriter consume = new OutputStreamWriter(target);
         Function<Object, Object> compiled = Util.compose(transforms.stream().map(t -> t.toTypedFunction(type)));
         elements = elements.peek(s -> Statistics.getInstance().updateStatisticsWithLine(s));
-        elements.map(type.stringCaster).map(compiled).forEachOrdered(r -> tryConsume(r, consume));
+        elements.map(type.stringCaster).map(compiled).forEachOrdered(r -> tryConsume(r, output));
+
         try {
-            target.flush();
-            consume.close();
+            output.flush();
         } catch (IOException e) {
             System.err.println("Could not cleanup outputs after all operations: " + e.getMessage());
         }

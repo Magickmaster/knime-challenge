@@ -3,6 +3,7 @@ package com.jonassigel;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
@@ -73,7 +74,6 @@ public class Main {
 			System.err.println("Fallback to sysout! ");
 			target = System.out;
 		}
-
 		// Open file and allow asynchronous operation on data
 		try (Scanner sc = new Scanner(Paths.get(argPairs.get("--input")))) {
 			sc.useDelimiter("\n");
@@ -88,14 +88,18 @@ public class Main {
 			// Test file: 35GB text, memory usage never over 8gb, completed successfully
 			// with parallel usage. Other method would have required loading all to memory,
 			// which is not possible with just 16gb +8 swap ram
+			System.out.println("");
+			System.out.println("");
+			OutputStreamWriter output = new OutputStreamWriter(target);
 			Stream<String> elements = sc.tokens().parallel();
-			Transform.transformInput(type, target, transformers, elements);
+			Transform.transformInput(type, output, transformers, elements);
+			System.out.println("");
+			System.out.println("");
 		} catch (IOException e) {
 			// Wish: Logging library
 			System.err.println("There was an IO exception: " + e.getMessage());
 			System.exit(1);
 		}
-
 		// DO NOT CHANGE THE FOLLOWING LINES OF CODE
 		System.out.println(String.format("Processed %d lines (%d of which were unique)", //
 				Statistics.getInstance().getNoOfLinesRead(), //
